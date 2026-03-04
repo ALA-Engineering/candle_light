@@ -24,6 +24,7 @@ echo "Configuring $DEVICE at ${BAUD} baud..."
 stty -F "$DEVICE" $BAUD cs8 -cstopb -parenb -echo -icanon raw || exit 1
 
 # Loop 5 times
+uart_success=0
 for i in $(seq 1 5); do
     echo
     echo "--- Iteration $i ---"
@@ -35,6 +36,7 @@ for i in $(seq 1 5); do
     {
         timeout 2 cat "$DEVICE" | while IFS= read -r line; do
             size=${#line}
+            uart_success=$((uart_success + 1))
             echo "Recv (${size} bytes): $line"
         done
     } &
@@ -49,6 +51,13 @@ for i in $(seq 1 5); do
     wait $READER_PID
     echo "Iteration $i complete."
 done
+
+# Check if we received 5 messages
+if [[ "$uart_success" -eq 5 ]]; then
+    echo "RS232 (Self loop) - PASSED!"
+else
+    echo "RS232 (Self loop) - FAILED!"
+fi
 
 
 echo
@@ -89,6 +98,22 @@ kill $PID0 $PID1 2>/dev/null
 wait $PID0 $PID1 2>/dev/null
 
 echo "CAN receive-only test done."
+
+
+# Install v4l-utils (non‑interactive)
+apt-get update -y
+DEBIAN_FRONTEND=noninteractive apt-get install -y v4l-utils
+
+# Verify installation
+if ! command -v v4l2-ctl >/dev/null 2>&1; then
+  echo "ERROR: v4l2-ctl not found after installation." >&2
+  exit 1
+fi
+
+# Check for USB3 connection to the camera.
+echo "Listing V4L2 devices..."
+v4l2-ctl --list-devices
+
 echo
 echo "=== ALL TESTS COMPLETE ==="
 
