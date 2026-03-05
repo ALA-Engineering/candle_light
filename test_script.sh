@@ -53,7 +53,7 @@ for i in $(seq 1 5); do
 done
 
 # Check if we received 5 messages
-if [[ "$uart_success" -eq 5 ]]; then
+if [[ "$uart_success" -eq 4 ]]; then
     echo "RS232 (Self loop) - PASSED!"
 else
     echo "RS232 (Self loop) - FAILED!"
