@@ -112,7 +112,7 @@ fi
 
 # Check for USB3 connection to the camera.
 echo "Listing V4L2 devices..."
-v4l2-ctl --list-devices
+v4l2-ctl -d /dev/video0 --list-formats-ext
 
 echo
 echo "=== ALL TESTS COMPLETE ==="
